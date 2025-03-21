@@ -1,4 +1,4 @@
-# swap.io clmm Rust SDK
+# Swap.io CLMM Rust SDK
 
 This repository provides a Rust Software Development Kit (SDK) to interact with the Swap.io CLMM smart contracts and integrate with the [jup.ag swap router program](https://station.jup.ag/docs/dex-integration). It is designed to streamline the process of integrating decentralized exchange (DEX) functionalities according to the requirements specified by jup.ag.
 
