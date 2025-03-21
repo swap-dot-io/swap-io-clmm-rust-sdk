@@ -26,7 +26,7 @@ Thank you for your interest in contributing to the Swap.io CLMM Rust SDK! Your h
 
 ## Code Style
 
-- Follow the [Rust style guidelines](https://doc.rust-lang.org/style/) and use `cargo fmt` to format your code.
+- Follow the [Rust style guidelines]([https://doc.rust-lang.org/style/](https://github.com/rust-dev-tools/fmt-rfcs)) and use `cargo fmt` to format your code.
 - Write clear, maintainable code with proper documentation and comments where necessary.
 - Ensure that your code is accompanied by tests to verify its correctness.
 
