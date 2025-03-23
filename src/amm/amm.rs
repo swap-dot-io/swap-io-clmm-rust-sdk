@@ -39,6 +39,10 @@ impl SwapIoClmmAdapter {
     pub fn token_b_decimals(&self) -> u8 {
         self.token_b_decimals
     }
+
+    pub fn pool_state(&self) -> &PoolState {
+        &self.pool_state
+    }
 }
 
 impl Amm for SwapIoClmmAdapter where Self: Sized {

@@ -47,10 +47,11 @@ fn test_from_keyed_account_with_real_pool() {
     println!("Program ID: {}", amm_interface.program_id());
     println!("Token A decimals: {}", adapter.token_a_decimals());
     println!("Token B decimals: {}", adapter.token_b_decimals());
+    println!("Config: {:?}", adapter.pool_state().amm_config);
     
     // Additionally, you can check what other methods return
     let reserve_mints = amm_interface.get_reserve_mints();
     println!("Reserve mints: {:?}", reserve_mints);
     // fail test
-    // assert_eq!(1, 2);
+    assert_eq!(1, 2);
 }
