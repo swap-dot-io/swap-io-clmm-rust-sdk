@@ -1,82 +1,105 @@
-use crate::clmm::{AmmConfig, PoolState, TickArrayBitmapExtension, TickArrayState};
+use crate::{clmm::PoolState, serialization::minimal_deserialize_pool_state};
 // use crate::serialization::deserialize_pool_state;
 use jupiter_amm_interface::{
     Amm, AmmContext, KeyedAccount, AccountMap, Quote, QuoteParams, SwapParams, SwapAndAccountMetas, 
 };
 use anyhow::Result;
-use solana_program::{program_pack::Pack, pubkey::Pubkey};
+use solana_program::pubkey::Pubkey;
 
 pub struct SwapIoClmmAdapter {
     pool_key: Pubkey,
     pool_state: PoolState,
-    amm_config: Option<AmmConfig>,
-    tickarray_bitmap_extension: Option<TickArrayBitmapExtension>,
-    tick_arrays: Option<TickArrayState>,
     token_a_decimals: u8,
     token_b_decimals: u8,
-    slippage: u16, // Базовый пункт, например, 100 = 1%
+    program_id: Pubkey,
 }
 
 impl SwapIoClmmAdapter {
     fn new(
         pool_key: Pubkey,
         pool_state: PoolState,
+        program_id: Pubkey,
     ) -> Self {
         let token_a_decimals = pool_state.mint_decimals_0;
         let token_b_decimals = pool_state.mint_decimals_1;
         Self {
             pool_key,
             pool_state,
-            amm_config: None,
-            tickarray_bitmap_extension: None,
-            tick_arrays: None,
             token_a_decimals,
             token_b_decimals,
-            slippage: 100, // 1% по умолчанию
+            program_id,
         }
+    }
+    
+    // Make these getters public for testing
+    pub fn token_a_decimals(&self) -> u8 {
+        self.token_a_decimals
+    }
+    
+    pub fn token_b_decimals(&self) -> u8 {
+        self.token_b_decimals
     }
 }
 
 impl Amm for SwapIoClmmAdapter where Self: Sized {
     fn from_keyed_account(keyed_account: &KeyedAccount, _amm_context: &AmmContext) -> Result<Self> {
         let pool_key = keyed_account.key;
-        let pool_data = keyed_account.account.data.as_ref();
+        let pool_data: &[u8] = keyed_account.account.data.as_ref();
+
+        // Check if we have the 8-byte discriminator at the beginning
+        if pool_data.len() < 8 {
+            return Err(anyhow::anyhow!("Account data too short"));
+        }
         
-        // Десериализуем pool_state
-        let pool_state = PoolState::unpack(pool_data)?;
+        // Debug information about the account data
+        println!("Account data length: {}", pool_data.len());
         
-        Ok(Self::new(pool_key, pool_state))
+        // For Anchor programs, we need to skip the 8-byte discriminator
+        let data_without_discriminator = &pool_data[8..];
+        println!("Data without discriminator length: {}", data_without_discriminator.len());
+        
+        // Check size requirements
+        println!("PoolState size: {}", std::mem::size_of::<PoolState>());
+        
+        // Deserialize pool_state
+        println!("About to unpack PoolState");
+        // Use the minimal deserialization function
+        let pool_state = minimal_deserialize_pool_state(data_without_discriminator)
+            .map_err(|e| anyhow::anyhow!("Failed to deserialize pool state: {:?}", e))?;
+        
+        let program_id = keyed_account.account.owner;
+        Ok(Self::new(pool_key, pool_state, program_id))
     }
     
     fn label(&self) -> String {
-        todo!()
+        "SWAP-IO-CLMM".to_string()
     }
     
     fn program_id(&self) -> Pubkey {
-        todo!()
+        self.program_id
     }
     
     fn key(&self) -> Pubkey {
-        todo!()
+        self.pool_key
     }
-    
+
     fn get_reserve_mints(&self) -> Vec<Pubkey> {
-        todo!()
+        vec![self.pool_state.token_mint_0, self.pool_state.token_mint_1]
     }
     
     fn get_accounts_to_update(&self) -> Vec<Pubkey> {
         todo!()
     }
     
-    fn update(&mut self, account_map: &AccountMap) -> Result<()> {
+    fn update(&mut self, _account_map: &AccountMap) -> Result<()> {
         todo!()
     }
     
-    fn quote(&self, quote_params: &QuoteParams) -> Result<Quote> {
+    fn quote(&self, _quote_params: &QuoteParams) -> Result<Quote> {
         todo!()
     }
     
-    fn get_swap_and_account_metas(&self, swap_params: &SwapParams) -> Result<SwapAndAccountMetas> {
+    fn get_swap_and_account_metas(&self, __swap_params: &SwapParams) -> Result<SwapAndAccountMetas> {
         todo!()
     }
     

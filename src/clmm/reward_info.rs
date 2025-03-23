@@ -1,7 +1,8 @@
 use solana_program::pubkey::Pubkey;
 
 pub const REWARD_NUM: usize = 3;
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Copy, Clone)]
+#[repr(C)]
 pub struct RewardInfo {
     /// Reward state
     pub reward_state: u8,

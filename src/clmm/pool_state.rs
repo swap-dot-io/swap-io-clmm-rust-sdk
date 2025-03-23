@@ -1,8 +1,9 @@
-use solana_program::{program_pack::{IsInitialized, Pack, Sealed}, pubkey::Pubkey};
+use solana_program::pubkey::Pubkey;
 
 use super::{RewardInfo, REWARD_NUM};
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Copy, Clone)]
+#[repr(C)]
 pub struct PoolState {
     /// Bump to identify PDA
     pub bump: [u8; 1],
@@ -113,24 +114,4 @@ impl PoolState {
         + RewardInfo::LEN * REWARD_NUM
         + 8 * 16
         + 512;
-}
-
-impl Sealed for PoolState {}
-
-impl IsInitialized for PoolState {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-}
-
-impl Pack for PoolState {
-    const LEN: usize = PoolState::LEN;
-
-    fn pack_into_slice(&self, dst: &mut [u8]) {
-        todo!()
-    }
-
-    fn unpack_from_slice(src: &[u8]) -> Result<Self, solana_program::program_error::ProgramError> {
-        todo!()
-    }
 }
