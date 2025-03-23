@@ -12,6 +12,7 @@ fn test_from_keyed_account_with_real_pool() {
     
     // 2. Public key for real pool
     let pool_pubkey = Pubkey::from_str("HR1xNcU5XPHpEZDsEknw22oPFELk1VGyBzoSaCJrL926").unwrap();
+    let program_id = Pubkey::from_str("SWPammPnp7L9qFgV436u3CSPmcxU6ZQm6ttawzDTRuw").unwrap();
     
     // 3. get account's data
     let account = client.get_account(&pool_pubkey).expect("Failed to fetch account");
@@ -33,16 +34,23 @@ fn test_from_keyed_account_with_real_pool() {
     assert!(result.is_ok(), "Failed to create SwapIoClmmAdapter: {:?}", result.err());
     
     let adapter = result.unwrap();
-    
-    // 8. Check that the adapter key is equal to the pool_pubkey
+    let amm_interface: &dyn Amm = &adapter;
+    // Check that the adapter program_id is equal to the pool program_id
+    assert_eq!(amm_interface.program_id(), program_id);
+    // Check that the adapter key is equal to the pool_pubkey
     assert_eq!(adapter.key(), pool_pubkey);
+
     
     // Here you can add additional checks for pool_state fields
     println!("Successfully created adapter from real pool data");
+    println!("Pool key: {}", amm_interface.key());
+    println!("Program ID: {}", amm_interface.program_id());
     println!("Token A decimals: {}", adapter.token_a_decimals());
     println!("Token B decimals: {}", adapter.token_b_decimals());
     
     // Additionally, you can check what other methods return
-    let reserve_mints = adapter.get_reserve_mints();
+    let reserve_mints = amm_interface.get_reserve_mints();
     println!("Reserve mints: {:?}", reserve_mints);
+    // fail test
+    // assert_eq!(1, 2);
 }
