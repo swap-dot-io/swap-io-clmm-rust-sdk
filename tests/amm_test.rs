@@ -7,7 +7,7 @@ use std::str::FromStr;
 #[test]
 fn test_from_keyed_account_with_real_pool() {
     // 1. Establish RPC connection
-    let rpc_url = "https://api.mainnet-beta.solana.com"; // или другой RPC эндпоинт
+    let rpc_url = "https://api.mainnet-beta.solana.com"; // or any other solana RPC endpoint
     let client = RpcClient::new(rpc_url);
     
     // 2. Public key for real pool
