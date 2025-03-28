@@ -1,6 +1,7 @@
-pub mod amm;
-pub mod serialization;
-pub mod clmm;
+pub mod instruction;
+pub mod pool;
+pub mod quote;
+pub mod utils;
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
