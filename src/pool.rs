@@ -29,9 +29,13 @@ pub struct PoolManager {
 }
 
 impl PoolManager {
-    pub fn new(epoch: u64, pool_key: Pubkey, program_id: Pubkey, pool_state_account: &Account) -> Result<Self> {
-        let pool_state: PoolState =
-            deserialize_anchor_account::<PoolState>(pool_state_account)?;
+    pub fn new(
+        epoch: u64,
+        pool_key: Pubkey,
+        program_id: Pubkey,
+        pool_state_account: &Account,
+    ) -> Result<Self> {
+        let pool_state: PoolState = deserialize_anchor_account::<PoolState>(pool_state_account)?;
         let mut pool_manager = PoolManager {
             epoch,
             pool_key,
@@ -219,12 +223,18 @@ impl PoolManager {
             .collect()
     }
 
-    pub fn update(&mut self, account_map: Vec<&Account>, up_ticks: Vec<Account>, down_ticks: Vec<Account>) -> Result<()> {
+    pub fn update(
+        &mut self,
+        account_map: Vec<&Account>,
+        up_ticks: Vec<Account>,
+        down_ticks: Vec<Account>,
+    ) -> Result<()> {
         self.amm_config = Some(deserialize_anchor_account::<AmmConfig>(&account_map[0])?);
         self.mint0_data = Some(account_map[1].data.clone());
         self.mint1_data = Some(account_map[2].data.clone());
-        self.tickarray_bitmap_extension =
-            Some(deserialize_anchor_account::<TickArrayBitmapExtension>(&account_map[3])?);
+        self.tickarray_bitmap_extension = Some(deserialize_anchor_account::<
+            TickArrayBitmapExtension,
+        >(&account_map[3])?);
         Self::update_tick_arrays(up_ticks, &mut self.up_tick_arrays)?;
         Self::update_tick_arrays(down_ticks, &mut self.down_tick_arrays)?;
         Ok(())

@@ -1,7 +1,10 @@
 // swap_io_clmm_sdk/src/instruction.rs
 use crate::pool::PoolManager;
 use anyhow::Result;
-use solana_sdk::{instruction::{AccountMeta, Instruction}, pubkey::Pubkey};
+use solana_sdk::{
+    instruction::{AccountMeta, Instruction},
+    pubkey::Pubkey,
+};
 
 pub struct InstructionBuilder;
 
@@ -72,6 +75,10 @@ impl InstructionBuilder {
             }
         }
 
-        Ok(Instruction { program_id: pool_manager.program_id, accounts: account_metas, data: vec![] })
+        Ok(Instruction {
+            program_id: pool_manager.program_id,
+            accounts: account_metas,
+            data: vec![],
+        })
     }
 }
