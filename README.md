@@ -7,7 +7,11 @@ This repository provides a Rust Software Development Kit (SDK) to interact with 
 - [Overview](#overview)
 - [Features](#features)
 - [Installation](#installation)
-- [Usage](#usage)
+- [Core components](#core-components)
+    - [PoolManager](#poolmanager)
+    - [QuoteCalculator](#quotecalculator)
+    - [InstructionBuilder](#instructionbuilder)
+    - [Example Workflow](#example-workflow)
 - [Integration with jup.ag](#integration-with-jupag)
 - [Related Repositories](#related-repositories)
 - [Contributing](#contributing)
@@ -19,49 +23,112 @@ The Swap.io CLMM Rust SDK enables developers to interact with the underlying Swa
 
 ## Features
 
-- **DEX Integration:** Seamless integration with the jup.ag swap router as per the [integration documentation](https://station.jup.ag/docs/dex-integration).
+- **Pool Management:** Track and manage CLMM pool state with efficient tick array handling.
+- **Price Discovery:** Calculate accurate swap quotes with slippage protection.
+- **Instruction Building:** Generate optimized Solana instructions for swaps.
+- **Token Fee Support:** Handle SPL Token 2022 transfer fees automatically.
 - **Rust Native:** Built using Rust, offering strong performance and memory safety.
 - **Abstraction Layer:** Simplified API for interacting with the Swap.io CLMM smart contracts.
 - **Extensible:** Designed with modularity in mind to support future features and integrations.
 
 ## Installation
 
-Ensure you have [Rust](https://www.rust-lang.org/tools/install) installed on your system. Then, clone the repository and build the project using Cargo:
+Add the SDK to your Cargo.toml:
 
-```bash
-git clone https://github.com/swap-dot-io/swap-io-clmm-rust-sdk.git
-cd swap-io-clmm-rust-sdk
-cargo build --release
+```toml
+[dependencies]
+swap-io-clmm-rust-sdk = { git = "https://github.com/swap-dot-io/swap-io-clmm-rust-sdk" }
+solana-sdk = "=1.16.25"
 ```
 
-## Usage
+## Core Components
 
-Below is a brief example to demonstrate how to initialize the SDK and interact with the swap.io clmm smart contracts:
+### PoolManager
+
+Handles pool state tracking and tick array management:
 
 ```rust
-use swap_io_clmm_sdk::{Client, Config};
+// Initialize a pool manager from an account
+let pool_manager = PoolManager::new(epoch, pool_key, program_id, pool_state_account)?;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Configure the SDK (update with appropriate endpoint or key as needed)
-    let config = Config::new("https://api.swap-io.io");
-    let client = Client::new(config);
+// Update the pool manager with the latest data
+pool_manager.update(accounts, up_tick_accounts, down_tick_accounts)?;
 
-    // Example: Query liquidity pool information
-    let pool_info = client.get_pool_info("POOL_ID")?;
-    println!("Pool Info: {:?}", pool_info);
+// Get the current pool state
+let pool_state = pool_manager.get_pool_state();
 
-    // Example: Create a swap quote using jup.ag integration
-    let swap_quote = client.get_swap_quote("TOKEN_A", "TOKEN_B", 1000)?;
-    println!("Swap Quote: {:?}", swap_quote);
+```
 
-    Ok(())
-}
+### QuoteCalculator
+
+Calculates price quotes for swaps with detailed fee information:
+
+```rust
+// Get a quote for swapping tokens
+let quote = QuoteCalculator::calculate_quote(
+    input_mint,
+    output_mint,
+    true, // exact input
+    amount,
+    &pool_manager
+)?;
+
+```
+
+### InstructionBuilder
+
+Generates Solana instructions for executing swaps:
+
+```rust
+// Build a swap instruction
+let swap_instruction = InstructionBuilder::build_swap_instruction(
+    &pool_manager,
+    source_mint,
+    destination_mint,
+    source_token_account,
+    destination_token_account
+)?;
+
+// Add to a transaction
+transaction.add(swap_instruction);
+```
+
+
+### Example Workflow
+
+```rust
+// 1. Initialize pool manager
+let pool_manager = PoolManager::new(epoch, pool_key, program_id, pool_state_account)?;
+
+// 2. Get required accounts
+let accounts_to_update = pool_manager.get_accounts_to_update();
+// Fetch accounts from blockchain...
+
+// 3. Update manager with latest data
+pool_manager.update(accounts, up_tick_accounts, down_tick_accounts)?;
+
+// 4. Calculate swap quote
+let quote = QuoteCalculator::calculate_quote(
+    token_a_mint, 
+    token_b_mint, 
+    true, // direction: A -> B
+    1_000_000, 
+    &pool_manager
+)?;
+
+// 5. Generate swap instruction
+let instruction = InstructionBuilder::build_swap_instruction(
+    &pool_manager,
+    token_a_mint,
+    token_b_mint,
+    user_token_a_account,
+    user_token_b_account
+)?;
 ```
 
 For more detailed examples and API documentation, please refer to the project's documentation.
 
 ## Integration with jup.ag
-
 This SDK has been developed to meet the integration requirements specified in the [jup.ag swap router program documentation](https://station.jup.ag/docs/dex-integration). The SDK handles:
 
 - Data formatting and communication with the jup.ag endpoint.
@@ -73,6 +140,7 @@ Be sure to consult the jup.ag documentation for further details on configuring a
 ## Related Repositories
 
 - **Swap.io CLMM Smart Contracts:** The original smart contract implementation can be found in the [swap.io clmm repository](https://github.com/swap-dot-io/swap-io-clmm/).
+- **jupiter-amm-interface adapter** Implementation of jupiter-amm-interface [Swap.io CLMM Jupiter Adapter](https://github.com/swap-dot-io/jupiter-swap-io-adapter).
 - **jup.ag Documentation:** Detailed instructions and requirements are available at [jup.ag docs](https://station.jup.ag/docs/dex-integration).
 
 ## Contributing
@@ -82,9 +150,3 @@ Contributions to the SDK are welcome! Please review the [contributing guidelines
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
-
-
-
-
-
